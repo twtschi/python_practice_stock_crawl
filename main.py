@@ -6,9 +6,9 @@ Created on Thu Oct 20 11:41:09 2016
 """
 
 import stockquote
-import plot
+import plot,scan_list
 from Tkinter import *
-import unicodecsv
+import unicodecsv,os
 
 from datetime import datetime,timedelta
 
@@ -16,6 +16,12 @@ def read_csv(filename):
     with open(filename, 'rb') as f:
         reader = unicodecsv.DictReader(f)
         return list(reader)
+
+def write_csv(filename,fieldnames):
+    with open(filename, 'w') as f:
+        reader = unicodecsv.DictWriter(f,fieldnames=fieldnames)
+        reader.writeheader()
+        return reader
 
 def get_symbol_list(data):
     temp = set()
@@ -28,10 +34,29 @@ def show_ui(symbol,start_date,end_date):
     plot.plot_ui(h)
     print symbol
 
+def scan_all_list(start_date,end_date):
+    #Init symbol_list
+    symbol_list = list()
+
+    f = open('companylist.csv', 'r')
+    for row in csv.DictReader(f):
+        symbol_list.append(row['Symbol']) #Get Symbol List
+    f.close()
+
+    #Save Data
+    save_path = os.getcwd()
+
+    for index in symbol_list:
+        dict_url = os.path.join(save_path,'data\\%s.csv' % index)
+        csvfile = open(dict_url, 'w')
+        fieldnames = ['Date', 'High','Low','Close','K val','D val']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        k = list(stockquote.historical_quotes(index, start_date, end_date))
+        plot.save_data(k,writer)
+    print "Scan Completed"
 
 if __name__ == "__main__":
-    #h = list(stockquote.historical_quotes("GOOG", "20160101", "20161030"))
-    #plot.plot_ui(h)
 
 # Definition
     COMP_LIST = "companylist.csv"
@@ -83,20 +108,21 @@ if __name__ == "__main__":
     end_inputField["width"] = 50
     end_inputField.grid(row=2, column=1, columnspan=10)
     
-    select_symbol = defaultOption.get()
-    select_start_date = start_inputField.get()
-    select_end_date = end_inputField.get()
-    
     plot_btn = Button()
     plot_btn['text'] = "GO"
-    plot_btn['command'] = lambda: show_ui(defaultOption.get(),select_start_date,select_end_date)
+    plot_btn['command'] = lambda: show_ui(defaultOption.get(),start_inputField.get(),end_inputField.get())
     plot_btn.grid(row=3,column = 4)
     #scan_btn.pack()
     
     scan_btn = Button()
     scan_btn['text'] = "Scan"
-    scan_btn['command'] = lambda: show_ui(defaultOption.get(),select_start_date,select_end_date)
+    scan_btn['command'] = lambda: scan_all_list(start_inputField.get(),end_inputField.get())
     scan_btn.grid(row=3,column = 6)
+    
+    scan_daily_btn = Button()
+    scan_daily_btn['text'] = "Daily Judge"
+    scan_daily_btn['command'] = lambda: scan_list.scan_list_find_point()
+    scan_daily_btn.grid(row=3,column = 8)
     
     
     root.mainloop()
