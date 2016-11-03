@@ -55,6 +55,9 @@ def scan_all_list(start_date,end_date):
         k = list(stockquote.historical_quotes(index, start_date, end_date))
         plot.save_data(k,writer)
     print "Scan Completed"
+    
+    #Append Daily check
+    scan_list.scan_list_find_point()
 
 if __name__ == "__main__":
 

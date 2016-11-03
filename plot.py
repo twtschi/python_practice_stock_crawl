@@ -64,6 +64,9 @@ def save_data (data,file_writer):
                               'K val': temp_k_value,
                               'D val': temp_d_value
                               })
+        #file_write_opener.seek(-2, os.SEEK_END) # Delete writerow with '/r'/n'
+        #file_write_opener.truncate()            # 
+            
 def plot_ui (data):
     output_file("plot.html")
 #Initialization
